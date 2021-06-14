@@ -56,7 +56,7 @@ class UserRepository
 
     public function getUserAccessToken($userId)
     {
-        return $this->userGoogleToken->where('user_id', $userId)->first();
+        return $this->userGoogleToken->where('user_id', $userId)->first()->only('access_token');
     }
 
     public function getStudentInfo($userId)
