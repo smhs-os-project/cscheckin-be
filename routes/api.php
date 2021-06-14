@@ -15,13 +15,13 @@ use Illuminate\Support\Facades\Route;
 */
 
 
-
 Route::get('/', 'GeneralController@isOk');
+Route::get('/info/{org}', 'GeneralController@getInfo');
 
 Route::post('/auth/token/{org}', 'AuthController@createToken');
 
 
-Route::middleware('auth:sanctum')->group(function(){
+Route::middleware('auth:sanctum')->group(function () {
     Route::group([
         'prefix' => 'auth'
     ], function ($router) {
@@ -35,14 +35,14 @@ Route::middleware('auth:sanctum')->group(function(){
     ], function ($router) {
         Route::get('/', 'CourseController@getCourse');
         Route::get('/google', 'CourseController@getGCLCourse');
-        Route::post('/', 'CourseController@createCourse');
+        Route::post('/{google_classroom_id}', 'CourseController@createCourse');
+        Route::post('/share/{course_id}', 'CourseController@shareCourse');
     });
 
     Route::group([
         'prefix' => 'checkin'
     ], function ($router) {
-        Route::get('/{course_id}', 'CheckinController@createToken');
-        Route::get('/{class_id}', 'CheckinController@revokeToken');
-        Route::post('/{course_id}', 'CheckinController@user');
+        Route::get('/{course_id}', 'CheckinController@getCourseCheckin');
+        Route::post('/{course_uuid}', 'CheckinController@checkin');
     });
 });
