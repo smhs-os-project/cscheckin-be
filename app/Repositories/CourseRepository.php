@@ -36,6 +36,11 @@ class CourseRepository
         return $this->course->find($id);
     }
 
+    public function findCourseByUuid($uuid)
+    {
+        return $this->course->where('uuid', $uuid)->first();
+    }
+
     public function findCourseByGoogleClassroomId($googleClassroomId)
     {
         return $this->course->where('google_classroom_id', $googleClassroomId)->get();
@@ -49,6 +54,11 @@ class CourseRepository
     public function getStudentByGoogleClassroomId($googleClassroomId)
     {
         return $this->courseStudent->where('google_classroom_id', $googleClassroomId)->get();
+    }
+
+    public function hasCourseStudent($googleClassroomId, $google_user_id)
+    {
+        return (bool)$this->courseStudent->where('google_classroom_id', $googleClassroomId)->where('google_user_id', $google_user_id)->get();
     }
 
     public function createCourse($data)

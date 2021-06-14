@@ -6,6 +6,7 @@ use App\Repositories\CourseRepository;
 use App\Repositories\UserRepository;
 use Google_Client;
 use Google_Service_Classroom;
+use Google_Service_Classroom_Announcement;
 use Google_Service_Classroom_Student;
 use Google_Service_Exception;
 use Illuminate\Http\Request;
@@ -59,11 +60,11 @@ class CourseController extends Controller
         return response()->json($result, Response::HTTP_OK);
     }
 
-    public function createCourse(Request $request)
+    public function createCourse(Request $request, $googleClassroomId)
     {
-        $googleClassroomId = $request->input('google_classroom_id');
         $startTimestamp = $request->input('start_timestamp');
         $lateTime = $request->input('late_time');
+        $expireTime = $request->input('expire_time');
         $user = Auth::user();
         $token = $this->userRepository->getUserAccessToken($user['id']);
         $client = new Google_Client();
@@ -93,7 +94,33 @@ class CourseController extends Controller
             'teacher_id' => $user['id'],
             'start_timestamp' => $startTimestamp,
             'late_time' => $lateTime,
+            'expire_time' => $expireTime,
             'uuid' => (string)Str::uuid()]);
         return response()->json($course, Response::HTTP_OK);
+    }
+
+    public function shareCourse(Request $request, $courseId)
+    {
+        $user = Auth::user();
+        $token = $this->userRepository->getUserAccessToken($user['id']);
+        $client = new Google_Client();
+        $client->setAccessToken($token);
+        $service = new Google_Service_Classroom($client);
+        $course = $this->courseRepository->findCourseById($courseId);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        if ($course['teacher_id'] != $user['id']) {
+            return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
+        }
+        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . $user['domain']) . '/' . $course['uuid'];
+        $msg = '簽到連結如下:
+' . $link;
+        $announcement = new Google_Service_Classroom_Announcement(array(
+            'text' => $msg,
+            'state' => 'PUBLISHED'
+        ));
+        $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
+        return response()->json([], Response::HTTP_CREATED);
     }
 }
