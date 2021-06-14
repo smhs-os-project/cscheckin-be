@@ -45,11 +45,10 @@ class AuthController extends Controller
                 'email' => $payload['email'],
                 'photo' => $payload['picture']]);
         }
-        $user_id = $user['id'];
-        $this->userRepository->setUserAccessToken($user_id, $access_token);
+        $this->userRepository->setUserAccessToken($user['id'], $access_token);
         $token = $user->createToken('api-token');
 
-        return response()->json(['access_token' => $token->plainTextToken, 'token_type' => 'Bearer', 'exp' => $payload['exp']], Response::HTTP_CREATED);
+        return response()->json(['access_token' => $token->plainTextToken, 'token_type' => 'Bearer', 'exp' => $payload['exp'], 'user' => $user], Response::HTTP_CREATED);
     }
 
     public function whoami(Request $request)
