@@ -14,6 +14,35 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-Route::middleware('auth:api')->get('/user', function (Request $request) {
-    return $request->user();
+
+
+Route::get('/', 'GeneralController@isOk');
+
+Route::post('/auth/token/{org}', 'AuthController@createToken');
+
+
+Route::middleware('auth:sanctum')->group(function(){
+    Route::group([
+        'prefix' => 'auth'
+    ], function ($router) {
+        Route::post('/student', 'AuthController@setStudent');
+        Route::get('/user', 'AuthController@whoami');
+        Route::delete('/token', 'AuthController@revokeToken');
+    });
+
+    Route::group([
+        'prefix' => 'course'
+    ], function ($router) {
+        Route::get('/', 'CourseController@getCourse');
+        Route::get('/google', 'CourseController@getGCLCourse');
+        Route::post('/', 'CourseController@createCourse');
+    });
+
+    Route::group([
+        'prefix' => 'checkin'
+    ], function ($router) {
+        Route::get('/{course_id}', 'CheckinController@createToken');
+        Route::get('/{class_id}', 'CheckinController@revokeToken');
+        Route::post('/{course_id}', 'CheckinController@user');
+    });
 });
