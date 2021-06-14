@@ -17,6 +17,8 @@ class CreateCourseStudentsTable extends Migration
             $table->id();
             $table->string('google_classroom_id');
             $table->string('google_user_id');
+            $table->string('name');
+            $table->string('email');
             $table->timestamps();
         });
     }

@@ -16,7 +16,8 @@ class CreateCoursesTable extends Migration
         Schema::create('courses', function (Blueprint $table) {
             $table->id();
             $table->string('google_classroom_id');
-            $table->foreignId('user_id')->constrained();
+            $table->string('name');
+            $table->foreignId('teacher_id')->constrained('users');
             $table->dateTime('start_timestamp');
             $table->time('late_time');
             $table->uuid('uuid');
