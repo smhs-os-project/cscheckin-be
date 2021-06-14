@@ -20,6 +20,7 @@ class CreateCoursesTable extends Migration
             $table->foreignId('teacher_id')->constrained('users');
             $table->dateTime('start_timestamp');
             $table->time('late_time');
+            $table->time('expire_time');
             $table->uuid('uuid');
             $table->timestamps();
         });
