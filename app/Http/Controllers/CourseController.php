@@ -9,6 +9,7 @@ use Google_Service_Classroom;
 use Google_Service_Classroom_Announcement;
 use Google_Service_Classroom_Student;
 use Google_Service_Exception;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
@@ -114,7 +115,14 @@ class CourseController extends Controller
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
         $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . $user['domain']) . '/' . $course['uuid'];
-        $msg = '簽到連結如下:
+        $response = Http::post(env("CSC_SHORT_API"), [
+            'signature' => env("CSC_SHORT_SIGNATURE"),
+            'action' => 'shorturl',
+            'format' => 'simple',
+            'url' => $link,
+        ]);
+        $link = $response->body();
+        $msg = '嗨各位同學，這節課的簽到連結如下：
 ' . $link;
         $announcement = new Google_Service_Classroom_Announcement(array(
             'text' => $msg,
