@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\CourseRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
+use Carbon\CarbonInterval;
 use Exception;
 use Google_Client;
 use Google_Service_Classroom;
@@ -42,7 +43,7 @@ class CourseController extends Controller
         return response()->json($courses, Response::HTTP_OK);
     }
 
-    public function getCourseByUuid(Request $request,$uuid)
+    public function getCourseByUuid(Request $request, $uuid)
     {
         $course = $this->courseRepository->findCourseByUuid($uuid);
         if (!$course) {
@@ -138,8 +139,13 @@ class CourseController extends Controller
             }
         } catch (Exception $e) {
         }
-        $msg = '嗨各位同學，這節課的簽到連結如下：
-' . $link;
+        $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->format('Y-m-d H:i');
+        $lateTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']))->format('H:i');
+        $expireTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']))->format('H:i');
+        $msg = '同學好，本節課的簽到連結如下： ' . $link . '
+本節有效簽到起始時間為 ' . $startTime . ' ~ ' . $expireTime . '，' . $lateTime . '後紀錄為遲到。
+1. 若為簽到或超過有效簽到時間，則會被歸類為「未到」。
+2. 簽到相關操作流程，請參閱本篇說明： https://cscin.tk/checkin';
         $announcement = new Google_Service_Classroom_Announcement(array(
             'text' => $msg,
             'state' => 'PUBLISHED'
