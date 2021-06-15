@@ -126,7 +126,7 @@ class CourseController extends Controller
         if ($course['teacher_id'] != $user['id']) {
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
-        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*') . '/' . $course['uuid'];
+        $link = env("FRONTEND_URL") . '/' . (config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*')) . '/' . $course['uuid'];
         try {
             $response = Http::asForm()->post(env("CSC_SHORT_API"), [
                 'signature' => env("CSC_SHORT_SIGNATURE"),
@@ -164,7 +164,7 @@ class CourseController extends Controller
         if ($course['teacher_id'] != $user['id']) {
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
-        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*') . '/' . $course['uuid'];
+        $link = env("FRONTEND_URL") . '/' . (config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*')) . '/' . $course['uuid'];
         try {
             $response = Http::asForm()->post(env("CSC_SHORT_API"), [
                 'signature' => env("CSC_SHORT_SIGNATURE"),
