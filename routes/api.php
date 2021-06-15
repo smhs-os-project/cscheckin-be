@@ -16,7 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', 'GeneralController@isOk');
-Route::get('/info/{org}', 'GeneralController@getInfo');
+Route::get('/info/{org?}', 'GeneralController@getInfo');
 
 Route::post('/auth/token/{org}', 'AuthController@createToken');
 
@@ -37,6 +37,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/google', 'CourseController@getGCLCourse');
         Route::post('/{google_classroom_id}', 'CourseController@createCourse');
         Route::post('/share/{course_id}', 'CourseController@shareCourse');
+        Route::delete('/{course_id}', 'CourseController@endCourse');
     });
 
     Route::group([
