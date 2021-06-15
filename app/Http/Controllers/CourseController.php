@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Repositories\CourseRepository;
 use App\Repositories\UserRepository;
+use Carbon\Carbon;
 use Google_Client;
 use Google_Service_Classroom;
 use Google_Service_Classroom_Announcement;
@@ -36,7 +37,7 @@ class CourseController extends Controller
     public function getCourse(Request $request)
     {
         $user = Auth::user();
-        $courses = $this->courseRepository->allCourse();
+        $courses = $this->courseRepository->findCourseByTeacherId($user['id']);
         return response()->json($courses, Response::HTTP_OK);
     }
 
@@ -115,13 +116,15 @@ class CourseController extends Controller
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
         $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . $user['domain']) . '/' . $course['uuid'];
-        $response = Http::post(env("CSC_SHORT_API"), [
+        $response = Http::asForm()->post(env("CSC_SHORT_API"), [
             'signature' => env("CSC_SHORT_SIGNATURE"),
             'action' => 'shorturl',
             'format' => 'simple',
             'url' => $link,
         ]);
-        $link = $response->body();
+        if ($response->ok()) {
+            $link = $response->body();
+        }
         $msg = '嗨各位同學，這節課的簽到連結如下：
 ' . $link;
         $announcement = new Google_Service_Classroom_Announcement(array(
@@ -129,6 +132,22 @@ class CourseController extends Controller
             'state' => 'PUBLISHED'
         ));
         $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
-        return response()->json([], Response::HTTP_CREATED);
+        return response()->json(['link' => $link], Response::HTTP_CREATED);
+    }
+
+    public function endCourse(Request $request, $courseId)
+    {
+        $user = Auth::user();
+        $course = $this->courseRepository->findCourseById($courseId);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        if ($course['teacher_id'] != $user['id']) {
+            return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
+        }
+        $time = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->diff(Carbon::now())->format('%H:%i:%s');
+        $this->courseRepository->updateCourse($courseId, ['expire_time' => $time]);
+
+        return response()->json([], Response::HTTP_NO_CONTENT);
     }
 }

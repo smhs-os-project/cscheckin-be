@@ -74,9 +74,9 @@ class CourseRepository
         }
     }
 
-    public function updateCourse($id, $data)
+    public function updateCourse($courseId, $data)
     {
-        return $this->courseStudent->where('id', $id)->update($data);
+        return $this->course->where('id', $courseId)->update($data);
     }
 
     public function deleteCourse($id)
