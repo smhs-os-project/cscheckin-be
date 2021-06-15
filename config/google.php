@@ -12,7 +12,7 @@ return [
         'chinese_name' => '國立鳳山高中',
     ],
     'MAPPING' => [
-        'smhs.kh.edu.tw' => 'smhs',
-        'fssh.khc.edu.tw' => 'fssh',
+        'smhs-kh-edu-tw' => 'smhs',
+        'fssh-khc-edu-tw' => 'fssh',
     ]
 ];

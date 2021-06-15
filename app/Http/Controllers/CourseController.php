@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Repositories\CourseRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
+use Exception;
 use Google_Client;
 use Google_Service_Classroom;
 use Google_Service_Classroom_Announcement;
@@ -115,15 +116,18 @@ class CourseController extends Controller
         if ($course['teacher_id'] != $user['id']) {
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
-        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . $user['domain']) . '/' . $course['uuid'];
-        $response = Http::asForm()->post(env("CSC_SHORT_API"), [
-            'signature' => env("CSC_SHORT_SIGNATURE"),
-            'action' => 'shorturl',
-            'format' => 'simple',
-            'url' => $link,
-        ]);
-        if ($response->ok()) {
-            $link = $response->body();
+        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) . '/' . $course['uuid'];
+        try {
+            $response = Http::asForm()->post(env("CSC_SHORT_API"), [
+                'signature' => env("CSC_SHORT_SIGNATURE"),
+                'action' => 'shorturl',
+                'format' => 'simple',
+                'url' => $link,
+            ]);
+            if ($response->ok()) {
+                $link = $response->body();
+            }
+        } catch (Exception $e) {
         }
         $msg = '嗨各位同學，這節課的簽到連結如下：
 ' . $link;
