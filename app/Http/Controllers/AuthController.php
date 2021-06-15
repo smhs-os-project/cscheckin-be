@@ -47,6 +47,10 @@ class AuthController extends Controller
         }
         $this->userRepository->setUserAccessToken($user['id'], $access_token);
         $token = $user->createToken('api-token');
+        $studentInfo = $this->userRepository->getStudentInfo($user['id']);
+        if ($studentInfo) {
+            $user['student'] = $studentInfo->only(['class', 'number']);
+        }
 
         return response()->json(['access_token' => $token->plainTextToken, 'token_type' => 'Bearer', 'exp' => $payload['exp'], 'user' => $user], Response::HTTP_CREATED);
     }
