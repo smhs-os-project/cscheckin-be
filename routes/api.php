@@ -36,6 +36,7 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/', 'CourseController@getCourse');
         Route::get('/google', 'CourseController@getGCLCourse');
         Route::post('/{google_classroom_id}', 'CourseController@createCourse');
+        Route::post('/share/{course_id}/post', 'CourseController@shareCourseWithPost');
         Route::post('/share/{course_id}', 'CourseController@shareCourse');
         Route::delete('/{course_id}', 'CourseController@endCourse');
     });

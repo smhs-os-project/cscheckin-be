@@ -11,8 +11,14 @@ return [
         'client_secret' => storage_path('app/google_client/fssh_client_secret.json'),
         'chinese_name' => '國立鳳山高中',
     ],
+    'common' => [
+        'client_id' => storage_path('app/google_client/general_client_id.key'),
+        'client_secret' => storage_path('app/google_client/general_client_secret.json'),
+        'chinese_name' => 'Google 個人或其他帳戶',
+    ],
     'MAPPING' => [
         'smhs-kh-edu-tw' => 'smhs',
         'fssh-khc-edu-tw' => 'fssh',
+        '*' => 'common',
     ]
 ];

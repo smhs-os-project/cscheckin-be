@@ -109,10 +109,10 @@ class CourseController extends Controller
             'late_time' => $lateTime,
             'expire_time' => $expireTime,
             'uuid' => (string)Str::uuid()]);
-        return response()->json($course, Response::HTTP_OK);
+        return response()->json($course, Response::HTTP_CREATED);
     }
 
-    public function shareCourse(Request $request, $courseId)
+    public function shareCourseWithPost(Request $request, $courseId)
     {
         $user = Auth::user();
         $token = $this->userRepository->getUserAccessToken($user['id']);
@@ -126,7 +126,7 @@ class CourseController extends Controller
         if ($course['teacher_id'] != $user['id']) {
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
-        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) . '/' . $course['uuid'];
+        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*') . '/' . $course['uuid'];
         try {
             $response = Http::asForm()->post(env("CSC_SHORT_API"), [
                 'signature' => env("CSC_SHORT_SIGNATURE"),
@@ -151,6 +151,33 @@ class CourseController extends Controller
             'state' => 'PUBLISHED'
         ));
         $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
+        return response()->json(['link' => $link], Response::HTTP_CREATED);
+    }
+
+    public function shareCourse(Request $request, $courseId)
+    {
+        $user = Auth::user();
+        $course = $this->courseRepository->findCourseById($courseId);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        if ($course['teacher_id'] != $user['id']) {
+            return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
+        }
+        $link = env("FRONTEND_URL") . '/' . config('google.MAPPING.' . str_replace('.', '-', $user['domain'])) ?? config('google.MAPPING.*') . '/' . $course['uuid'];
+        try {
+            $response = Http::asForm()->post(env("CSC_SHORT_API"), [
+                'signature' => env("CSC_SHORT_SIGNATURE"),
+                'action' => 'shorturl',
+                'format' => 'simple',
+                'url' => $link,
+            ]);
+            if ($response->ok()) {
+                $link = $response->body();
+            }
+        } catch (Exception $e) {
+        }
+
         return response()->json(['link' => $link], Response::HTTP_CREATED);
     }
 
