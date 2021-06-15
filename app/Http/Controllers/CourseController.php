@@ -42,6 +42,15 @@ class CourseController extends Controller
         return response()->json($courses, Response::HTTP_OK);
     }
 
+    public function getCourseByUuid(Request $request,$uuid)
+    {
+        $course = $this->courseRepository->findCourseByUuid($uuid);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        return response()->json($course, Response::HTTP_OK);
+    }
+
     public function getGCLCourse(Request $request)
     {
         $user = Auth::user();

@@ -47,3 +47,5 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::post('/{course_uuid}', 'CheckinController@checkin');
     });
 });
+
+Route::get('/course/{course_uuid}', 'CourseController@getCourseByUuid');
