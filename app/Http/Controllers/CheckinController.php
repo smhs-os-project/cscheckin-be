@@ -45,18 +45,28 @@ class CheckinController extends Controller
         $notCheckedIn = array();
         foreach ($allStu as $item) {
             $uu = $this->userRepository->findUserByGoogleUserId($item['google_user_id']);
-            $si = $this->userRepository->getStudentInfo($uu['id']);
-            $checkin = $checkinStu->where('student_id', $uu['id'])->first();
-
-            if ($checkin) {
-                $checkedIn[] = [
-                    'checkin_id' => $checkin['id'],
-                    'state' => $checkin['state'],
-                    'created_at' => $checkin['created_at'],
-                    'name' => $item['name'],
-                    'class' => $si['class'],
-                    'number' => $si['number'],
-                ];
+            if ($uu) {
+                $si = $this->userRepository->getStudentInfo($uu['id']);
+                $checkin = $checkinStu->where('student_id', $uu['id'])->first();
+                if ($checkin) {
+                    $checkedIn[] = [
+                        'checkin_id' => $checkin['id'],
+                        'state' => $checkin['state'],
+                        'created_at' => $checkin['created_at'],
+                        'name' => $item['name'],
+                        'class' => $si['class'],
+                        'number' => $si['number'],
+                    ];
+                } else {
+                    $notCheckedIn[] = [
+                        'checkin_id' => '',
+                        'state' => 'NOT_CHECKED_IN',
+                        'created_at' => '',
+                        'name' => $item['name'],
+                        'class' => '',
+                        'number' => '',
+                    ];
+                }
             } else {
                 $notCheckedIn[] = [
                     'checkin_id' => '',
@@ -81,16 +91,16 @@ class CheckinController extends Controller
         if (!$course) {
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
+        $user = Auth::user();
+        if (!$this->courseRepository->hasCourseStudent($course['google_classroom_id'], $user['google_user_id'])) {
+            return response()->json(['error' => 'student_out_of_course'], Response::HTTP_FORBIDDEN);
+        }
         $now = Carbon::now();
         $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp']);
         $lateTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']));
         $expireTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']));
         if ($now < $startTime || $now > $expireTime) {
             return response()->json(['error' => 'out_of_time'], Response::HTTP_BAD_REQUEST);
-        }
-        $user = Auth::user();
-        if (!$this->courseRepository->hasCourseStudent($course['google_classroom_id'], $user['google_user_id'])) {
-            return response()->json(['error' => 'student_out_of_course'], Response::HTTP_FORBIDDEN);
         }
         $state = $now < $lateTime ? 'ON_TIME' : 'LATE';
         $checkin = $this->checkinRepository->createCheckin([
