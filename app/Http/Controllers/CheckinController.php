@@ -54,7 +54,7 @@ class CheckinController extends Controller
                         'state' => $checkin['state'],
                         'created_at' => $checkin['created_at'],
                         'name' => $item['name'],
-                        'class' => $si['class'],
+                        'class' => $si['class'] ?? '',
                         'number' => $si['number'],
                     ];
                 } else {
