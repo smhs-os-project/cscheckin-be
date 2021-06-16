@@ -6,6 +6,7 @@ use App\Repositories\CourseRepository;
 use App\Repositories\UserRepository;
 use Carbon\Carbon;
 use Carbon\CarbonInterval;
+use DateTime;
 use Exception;
 use Google_Client;
 use Google_Service_Classroom;
@@ -101,11 +102,12 @@ class CourseController extends Controller
             }
             $this->courseRepository->setStudentByGoogleClassroomId($googleClassroomId, $newStudents);
         }
+        $newST = new DateTime($startTimestamp);
         $course = $this->courseRepository->createCourse([
             'google_classroom_id' => $googleClassroomId,
             'name' => $courseName,
             'teacher_id' => $user['id'],
-            'start_timestamp' => $startTimestamp,
+            'start_timestamp' => $newST->format('Y-m-d H:i:s'),
             'late_time' => $lateTime,
             'expire_time' => $expireTime,
             'uuid' => (string)Str::uuid()]);
