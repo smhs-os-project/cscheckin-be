@@ -35,7 +35,7 @@ class GeneralController extends Controller
                     continue;
                 $file = fopen($value['client_id'], "r");
                 $client_id = fgets($file, filesize($value['client_id']));
-                $result[] = ['client_id' => $client_id, 'chinese_name' => $value['chinese_name']];
+                $result[] = ['id' => $key, 'client_id' => $client_id, 'chinese_name' => $value['chinese_name']];
             }
             return response()->json($result, Response::HTTP_OK);
         }
