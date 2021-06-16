@@ -181,6 +181,27 @@ class CourseController extends Controller
         return response()->json(['link' => $link], Response::HTTP_CREATED);
     }
 
+    public function syncStudent(Request $request, $courseId)
+    {
+        $course = $this->courseRepository->findCourseById($courseId);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        $user = Auth::user();
+        $token = $this->userRepository->getUserAccessToken($user['id']);
+        $client = new Google_Client();
+        $client->setAccessToken($token);
+        $service = new Google_Service_Classroom($client);
+        $response = $service->courses_students->listCoursesStudents($course['google_classroom_id']);
+        $newStudents = array();
+        foreach ($response->students as $student) {
+            $newStudents[] = ['google_classroom_id' => $course['google_classroom_id'], 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName']];
+        }
+        $this->courseRepository->setStudentByGoogleClassroomId($course['google_classroom_id'], $newStudents);
+
+        return response()->json([], Response::HTTP_NO_CONTENT);
+    }
+
     public function endCourse(Request $request, $courseId)
     {
         $user = Auth::user();
