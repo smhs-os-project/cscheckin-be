@@ -54,7 +54,6 @@ class CheckinController extends Controller
                     'state' => $checkin['state'],
                     'created_at' => $checkin['created_at'],
                     'name' => $item['name'],
-                    'email' => $item['email'],
                     'class' => $si['class'],
                     'number' => $si['number'],
                 ];
@@ -64,7 +63,6 @@ class CheckinController extends Controller
                     'state' => 'NOT_CHECKED_IN',
                     'created_at' => '',
                     'name' => $item['name'],
-                    'email' => $item['email'],
                     'class' => '',
                     'number' => '',
                 ];

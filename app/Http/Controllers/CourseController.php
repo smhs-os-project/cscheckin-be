@@ -97,7 +97,7 @@ class CourseController extends Controller
             $response = $service->courses_students->listCoursesStudents($googleClassroomId);
             $newStudents = array();
             foreach ($response->students as $student) {
-                $newStudents[] = ['google_classroom_id' => $googleClassroomId, 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName'], 'email' => $student['profile']['emailAddress']];
+                $newStudents[] = ['google_classroom_id' => $googleClassroomId, 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName']];
             }
             $this->courseRepository->setStudentByGoogleClassroomId($googleClassroomId, $newStudents);
         }
