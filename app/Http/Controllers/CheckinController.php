@@ -10,6 +10,7 @@ use Carbon\CarbonInterval;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 
 class CheckinController extends Controller
 {
@@ -39,24 +40,39 @@ class CheckinController extends Controller
         if (!$course) {
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
-        $allStu = $this->courseRepository->getStudentByGoogleClassroomId($course['google_classroom_id'])->sortBy('name');
-        $checkinStu = $this->checkinRepository->findCheckinByCourseId($courseId);
-        $checkedIn = array();
-        $notCheckedIn = array();
-        foreach ($allStu as $item) {
-            $uu = $this->userRepository->findUserByGoogleUserId($item['google_user_id']);
-            if ($uu) {
-                $si = $this->userRepository->getStudentInfo($uu['id']);
-                $checkin = $checkinStu->where('student_id', $uu['id'])->first();
-                if ($checkin) {
-                    $checkedIn[] = [
-                        'checkin_id' => $checkin['id'],
-                        'state' => $checkin['state'],
-                        'created_at' => $checkin['created_at'],
-                        'name' => $item['name'],
-                        'class' => $si['class'] ?? '',
-                        'number' => $si['number'] ?? '',
-                    ];
+        $user = Auth::user();
+        if ($course['teacher_id'] != $user['id']) {
+            return response()->json(['error' => 'you_cannot_access_course'], Response::HTTP_FORBIDDEN);
+        }
+        $result = Cache::tags('checkin')->remember($courseId, Carbon::now()->addMinutes(60), function () use ($courseId, $course) {
+            $allStu = $this->courseRepository->getStudentByGoogleClassroomId($course['google_classroom_id'])->sortBy('name');
+            $checkinStu = $this->checkinRepository->findCheckinByCourseId($courseId);
+            $checkedIn = array();
+            $notCheckedIn = array();
+            foreach ($allStu as $item) {
+                $uu = $this->userRepository->findUserByGoogleUserId($item['google_user_id']);
+                if ($uu) {
+                    $si = $this->userRepository->getStudentInfo($uu['id']);
+                    $checkin = $checkinStu->where('student_id', $uu['id'])->first();
+                    if ($checkin) {
+                        $checkedIn[] = [
+                            'checkin_id' => $checkin['id'],
+                            'state' => $checkin['state'],
+                            'created_at' => $checkin['created_at'],
+                            'name' => $item['name'],
+                            'class' => $si['class'] ?? '',
+                            'number' => $si['number'] ?? '',
+                        ];
+                    } else {
+                        $notCheckedIn[] = [
+                            'checkin_id' => '',
+                            'state' => 'NOT_CHECKED_IN',
+                            'created_at' => '',
+                            'name' => $item['name'],
+                            'class' => '',
+                            'number' => '',
+                        ];
+                    }
                 } else {
                     $notCheckedIn[] = [
                         'checkin_id' => '',
@@ -67,22 +83,14 @@ class CheckinController extends Controller
                         'number' => '',
                     ];
                 }
-            } else {
-                $notCheckedIn[] = [
-                    'checkin_id' => '',
-                    'state' => 'NOT_CHECKED_IN',
-                    'created_at' => '',
-                    'name' => $item['name'],
-                    'class' => '',
-                    'number' => '',
-                ];
             }
-        }
-        $c = array_column($checkedIn, 'class');
-        $n = array_column($checkedIn, 'number');
-        array_multisort($c, SORT_ASC, $n, SORT_ASC, $checkedIn);
+            $c = array_column($checkedIn, 'class');
+            $n = array_column($checkedIn, 'number');
+            array_multisort($c, SORT_ASC, $n, SORT_ASC, $checkedIn);
+            return array_merge($checkedIn, $notCheckedIn);
+        });
 
-        return response()->json(array_merge($checkedIn, $notCheckedIn), Response::HTTP_OK);
+        return response()->json($result, Response::HTTP_OK);
     }
 
     public function checkin(Request $request, $courseUuid)
@@ -91,6 +99,7 @@ class CheckinController extends Controller
         if (!$course) {
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
+        Cache::tags('checkin')->forget($course['id']);
         $user = Auth::user();
         if (!$this->courseRepository->hasCourseStudent($course['google_classroom_id'], $user['google_user_id'])) {
             return response()->json(['error' => 'student_out_of_course'], Response::HTTP_FORBIDDEN);

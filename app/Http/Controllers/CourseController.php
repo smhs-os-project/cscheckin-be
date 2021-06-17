@@ -13,6 +13,7 @@ use Google_Service_Classroom;
 use Google_Service_Classroom_Announcement;
 use Google_Service_Classroom_Student;
 use Google_Service_Exception;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
@@ -201,6 +202,7 @@ class CourseController extends Controller
         if (!$course) {
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
+        Cache::tags('checkin')->forget($courseId);
         $user = Auth::user();
         $token = $this->userRepository->getUserAccessToken($user['id']);
         $client = new Google_Client();
