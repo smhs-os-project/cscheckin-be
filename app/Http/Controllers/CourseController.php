@@ -106,7 +106,7 @@ class CourseController extends Controller
             'google_classroom_id' => $googleClassroomId,
             'name' => $courseName,
             'teacher_id' => $user['id'],
-            'start_timestamp' => date('Y-m-d H:i:s', strtotime($startTimestamp)),
+            'start_timestamp' => date('c', strtotime($startTimestamp)),
             'late_time' => $lateTime,
             'expire_time' => $expireTime,
             'uuid' => (string)Str::uuid()]);
@@ -140,9 +140,9 @@ class CourseController extends Controller
             }
         } catch (Exception $e) {
         }
-        $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->format('Y-m-d H:i');
-        $lateTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']))->format('H:i');
-        $expireTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']))->format('H:i');
+        $startTime = Carbon::createFromFormat('c', $course['start_timestamp'])->format('Y-m-d H:i');
+        $lateTime = Carbon::createFromFormat('c', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']))->format('H:i');
+        $expireTime = Carbon::createFromFormat('c', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']))->format('H:i');
         $msg = '同學好，本節課的簽到連結如下： ' . $link . '
 本節有效簽到起始時間為 ' . $startTime . '~' . $expireTime . '，' . $lateTime . '後紀錄為「遲到」。
 1. 若未簽到或超過有效簽到時間，則會被歸類為「未到」。
@@ -213,7 +213,7 @@ class CourseController extends Controller
         if ($course['teacher_id'] != $user['id']) {
             return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
         }
-        $time = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->diff(Carbon::now())->format('%H:%i:%s');
+        $time = Carbon::createFromFormat('c', $course['start_timestamp'])->diff(Carbon::now())->format('%H:%i:%s');
         $this->courseRepository->updateCourse($courseId, ['expire_time' => $time]);
 
         return response()->json([], Response::HTTP_NO_CONTENT);
