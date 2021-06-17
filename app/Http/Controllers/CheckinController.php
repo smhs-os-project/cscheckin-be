@@ -96,9 +96,9 @@ class CheckinController extends Controller
             return response()->json(['error' => 'student_out_of_course'], Response::HTTP_FORBIDDEN);
         }
         $now = Carbon::now();
-        $startTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp']);
-        $lateTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']));
-        $expireTime = Carbon::createFromFormat('Y-m-d H:i:s', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']));
+        $startTime = Carbon::createFromFormat('c', $course['start_timestamp']);
+        $lateTime = Carbon::createFromFormat('c', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['late_time']));
+        $expireTime = Carbon::createFromFormat('c', $course['start_timestamp'])->add(CarbonInterval::createFromFormat('H:i:s', $course['expire_time']));
         if ($now < $startTime || $now > $expireTime) {
             return response()->json(['error' => 'out_of_time'], Response::HTTP_BAD_REQUEST);
         }
