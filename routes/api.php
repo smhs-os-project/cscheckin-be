@@ -35,7 +35,7 @@ Route::middleware('auth:sanctum')->group(function () {
     ], function ($router) {
         Route::get('/', 'CourseController@getCourse');
         Route::get('/google', 'CourseController@getGCLCourse');
-        Route::get('/course/id/{course_id}', 'CourseController@getCourseById');
+        Route::get('/id/{course_id}', 'CourseController@getCourseById');
         Route::post('/{google_classroom_id}', 'CourseController@createCourse');
         Route::post('/share/{course_id}/post', 'CourseController@shareCourseWithPost');
         Route::get('/share/{course_id}', 'CourseController@shareCourse');
