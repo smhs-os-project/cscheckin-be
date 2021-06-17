@@ -18,7 +18,7 @@ class CreateCoursesTable extends Migration
             $table->string('google_classroom_id');
             $table->string('name');
             $table->foreignId('teacher_id')->constrained('users');
-            $table->dateTime('start_timestamp');
+            $table->string('start_timestamp');
             $table->time('late_time');
             $table->time('expire_time');
             $table->uuid('uuid');
