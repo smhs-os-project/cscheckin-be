@@ -65,7 +65,7 @@ class CheckinController extends Controller
                         ];
                     } else {
                         $notCheckedIn[] = [
-                            'checkin_id' => '',
+                            'checkin_id' => -1,
                             'state' => 'NOT_CHECKED_IN',
                             'created_at' => '',
                             'name' => $item['name'],
@@ -75,7 +75,7 @@ class CheckinController extends Controller
                     }
                 } else {
                     $notCheckedIn[] = [
-                        'checkin_id' => '',
+                        'checkin_id' => -1,
                         'state' => 'NOT_CHECKED_IN',
                         'created_at' => '',
                         'name' => $item['name'],
