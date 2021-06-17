@@ -53,6 +53,19 @@ class CourseController extends Controller
         return response()->json($course, Response::HTTP_OK);
     }
 
+    public function getCourseById(Request $request, $id)
+    {
+        $user = Auth::user();
+        $course = $this->courseRepository->findCourseByUuid($id);
+        if (!$course) {
+            return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
+        }
+        if ($course['teacher_id'] != $user['id']) {
+            return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
+        }
+        return response()->json($course, Response::HTTP_OK);
+    }
+
     public function getGCLCourse(Request $request)
     {
         $user = Auth::user();
