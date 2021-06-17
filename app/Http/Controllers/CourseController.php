@@ -56,7 +56,7 @@ class CourseController extends Controller
     public function getCourseById(Request $request, $id)
     {
         $user = Auth::user();
-        $course = $this->courseRepository->findCourseByUuid($id);
+        $course = $this->courseRepository->findCourseById($id);
         if (!$course) {
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
