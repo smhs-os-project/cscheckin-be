@@ -61,7 +61,7 @@ class CourseController extends Controller
             return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
         }
         if ($course['teacher_id'] != $user['id']) {
-            return response()->json(['error' => 'you_cannot_share_this_course'], Response::HTTP_FORBIDDEN);
+            return response()->json(['error' => 'you_cannot_access_course'], Response::HTTP_FORBIDDEN);
         }
         return response()->json($course, Response::HTTP_OK);
     }
