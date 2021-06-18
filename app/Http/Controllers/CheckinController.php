@@ -72,8 +72,8 @@ class CheckinController extends Controller
                         'state' => 'NOT_CHECKED_IN',
                         'created_at' => '',
                         'name' => $item['name'],
-                        'class' => '',
-                        'number' => '',
+                        'class' => strval($si['class']) ?? '',
+                        'number' => strval($si['number']) ?? '',
                     ];
                 }
             } else {
@@ -90,7 +90,7 @@ class CheckinController extends Controller
         $c = array_column($checkedIn, 'class');
         $n = array_column($checkedIn, 'number');
         array_multisort($c, SORT_ASC, $n, SORT_ASC, $checkedIn);
-        $result = array_merge($checkedIn, $notCheckedIn);
+        $result = array_merge($notCheckedIn, $checkedIn);
 
         return response()->json($result, Response::HTTP_OK);
     }
