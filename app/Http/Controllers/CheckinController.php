@@ -89,7 +89,8 @@ class CheckinController extends Controller
         }
         $c = array_column($checkedIn, 'class');
         $n = array_column($checkedIn, 'number');
-        $result = array_multisort($c, SORT_ASC, $n, SORT_ASC, $checkedIn);
+        array_multisort($c, SORT_ASC, $n, SORT_ASC, $checkedIn);
+        $result = array_merge($checkedIn, $notCheckedIn);
 
         return response()->json($result, Response::HTTP_OK);
     }
