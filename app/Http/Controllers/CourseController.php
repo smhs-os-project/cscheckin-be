@@ -109,12 +109,7 @@ class CourseController extends Controller
         }
         $students = $this->courseRepository->getStudentByGoogleClassroomId($googleClassroomId);
         if (!count($students)) {
-            $response = $service->courses_students->listCoursesStudents($googleClassroomId);
-            $newStudents = array();
-            foreach ($response->students as $student) {
-                $newStudents[] = ['google_classroom_id' => $googleClassroomId, 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName']];
-            }
-            $this->courseRepository->setStudentByGoogleClassroomId($googleClassroomId, $newStudents);
+            $this->listGoogleCoursesStudents($googleClassroomId, $token);
         }
         $course = $this->courseRepository->createCourse([
             'google_classroom_id' => $googleClassroomId,
@@ -205,15 +200,7 @@ class CourseController extends Controller
         Cache::tags('checkin')->forget($courseId);
         $user = Auth::user();
         $token = $this->userRepository->getUserAccessToken($user['id']);
-        $client = new Google_Client();
-        $client->setAccessToken($token);
-        $service = new Google_Service_Classroom($client);
-        $response = $service->courses_students->listCoursesStudents($course['google_classroom_id']);
-        $newStudents = array();
-        foreach ($response->students as $student) {
-            $newStudents[] = ['google_classroom_id' => $course['google_classroom_id'], 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName']];
-        }
-        $this->courseRepository->setStudentByGoogleClassroomId($course['google_classroom_id'], $newStudents);
+        $this->listGoogleCoursesStudents($course['google_classroom_id'], $token);
 
         return response()->json([], Response::HTTP_NO_CONTENT);
     }
@@ -232,5 +219,28 @@ class CourseController extends Controller
         $this->courseRepository->updateCourse($courseId, ['expire_time' => $time]);
 
         return response()->json([], Response::HTTP_NO_CONTENT);
+    }
+
+    private function listGoogleCoursesStudents($googleClassroomId, $token)
+    {
+        $client = new Google_Client();
+        $client->setAccessToken($token);
+        $service = new Google_Service_Classroom($client);
+        $googleStudents = array();
+        $pageToken = NULL;
+        do {
+            $params = array(
+                'pageSize' => 100,
+                'pageToken' => $pageToken
+            );
+            $response = $service->courses_students->listCoursesStudents($googleClassroomId, $params);
+            $googleStudents = array_merge($googleStudents, $response->students);
+            $pageToken = $response->nextPageToken;
+        } while (!empty($pageToken));
+        $newStudents = array();
+        foreach ($googleStudents as $student) {
+            $newStudents[] = ['google_classroom_id' => $googleClassroomId, 'google_user_id' => $student['userId'], 'name' => $student['profile']['name']['fullName']];
+        }
+        $this->courseRepository->setStudentByGoogleClassroomId($googleClassroomId, $newStudents);
     }
 }
