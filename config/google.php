@@ -9,7 +9,7 @@ return [
     'fssh' => [
         'client_id' => storage_path('app/google_client/fssh_client_id.key'),
         'client_secret' => storage_path('app/google_client/fssh_client_secret.json'),
-        'chinese_name' => '國立鳳山高中',
+        'chinese_name' => '國立鳳山高級中學',
     ],
     'common' => [
         'client_id' => storage_path('app/google_client/general_client_id.key'),
