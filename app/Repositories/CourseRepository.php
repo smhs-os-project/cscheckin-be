@@ -58,7 +58,7 @@ class CourseRepository
 
     public function hasCourseStudent($googleClassroomId, $google_user_id)
     {
-        return (bool)$this->courseStudent->where('google_classroom_id', $googleClassroomId)->where('google_user_id', $google_user_id)->get();
+        return (bool)$this->courseStudent->where('google_classroom_id', $googleClassroomId)->where('google_user_id', $google_user_id)->first();
     }
 
     public function createCourse($data)
