@@ -60,8 +60,8 @@ class CheckinController extends Controller
                             'state' => $checkin['state'],
                             'created_at' => $checkin['created_at'],
                             'name' => $item['name'],
-                            'class' => strval($si['class']) ?? '',
-                            'number' => strval($si['number']) ?? '',
+                            'class' => strval($si['class'] ?? '') ?? '',
+                            'number' => strval($si['number'] ?? '') ?? '',
                         ];
                     } else {
                         $notCheckedIn[] = [
@@ -69,8 +69,8 @@ class CheckinController extends Controller
                             'state' => 'NOT_CHECKED_IN',
                             'created_at' => '',
                             'name' => $item['name'],
-                            'class' => strval($si['class']) ?? '',
-                            'number' => strval($si['number']) ?? '',
+                            'class' => strval($si['class'] ?? '') ?? '',
+                            'number' => strval($si['number'] ?? '') ?? '',
                         ];
                     }
                 } else {
