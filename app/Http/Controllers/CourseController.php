@@ -76,7 +76,8 @@ class CourseController extends Controller
         $service = new Google_Service_Classroom($client);
 
         $params = array(
-            'courseStates' => ['ACTIVE']
+            'courseStates' => ['ACTIVE'],
+            'teacherId' => $user['google_user_id']
         );
         $response = $service->courses->listCourses($params);
         $courses = $response->courses;
