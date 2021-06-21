@@ -16,8 +16,8 @@ class CreateStudentInformationTable extends Migration
         Schema::create('student_information', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id')->constrained();
-            $table->unsignedInteger('class');
-            $table->unsignedInteger('number');
+            $table->string('class');
+            $table->string('number');
             $table->timestamps();
         });
     }
