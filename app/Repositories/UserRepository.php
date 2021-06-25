@@ -6,21 +6,14 @@ use App\Entities\StudentInformation;
 use App\Entities\User;
 use App\Entities\UserGoogleToken;
 
-class UserRepository
+/**
+ * @mixin Builder
+ */
+class UserRepository extends Model
 {
-
-    /**
-     * @var User
-     */
-    private $user;
-    /**
-     * @var UserGoogleToken
-     */
-    private $userGoogleToken;
-    /**
-     * @var StudentInformation
-     */
-    private $studentInformation;
+    private User $user;
+    private UserGoogleToken $userGoogleToken;
+    private StudentInformation $studentInformation;
 
     public function __construct(User $user, UserGoogleToken $userGoogleToken, StudentInformation $studentInformation)
     {
@@ -29,7 +22,7 @@ class UserRepository
         $this->studentInformation = $studentInformation;
     }
 
-    public function allUser()
+    public function allUser(): \Illuminate\Database\Eloquent\Collection|array
     {
         return $this->user->all();
     }
