@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Exceptions\InvalidInputException;
 use App\Repositories\UserRepository;
 use Google_Client;
 use Illuminate\Http\Request;
@@ -10,42 +11,58 @@ use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
-    /**
-     * @var UserRepository
-     */
-    private $userRepository;
+    private UserRepository $userRepository;
 
     public function __construct(UserRepository $userRepository)
     {
         $this->userRepository = $userRepository;
     }
 
-    public function createToken(Request $request, $org)
+    /**
+     * Create the token of the specified organization
+     * @param Request $request
+     * @return \Illuminate\Http\JsonResponse
+     * @throws \Google\Exception
+     * @throws InvalidInputException
+     */
+    public function createToken(Request $request)
     {
-        $id_token = $request->input('id_token');
-        $access_token = $request->input('access_token');
+        $idToken = $request->input('id_token');
+        $accessToken = $request->input('access_token');
+        $orgToken = config("clientId.common");
 
-        if (config('google.' . $org) == null) {
-            return response()->json(['error' => 'org_not_found'], Response::HTTP_NOT_FOUND);
+        if (!is_string($idToken) || !is_string($accessToken)) {
+            throw new InvalidInputException("id_token 或 access_token 不是字串。", [
+                "id_token" => $idToken,
+                "access_token" => $accessToken,
+            ]);
         }
-        $client = new Google_Client();  // Specify the CLIENT_ID of the app that accesses the backend
-        $client->setAuthConfig(config('google.' . $org . '.client_secret'));
-        $payload = $client->verifyIdToken($id_token);
+
+        $client = new Google_Client();
+        $client->setAuthConfig($orgToken->get("client_id"));
+        $payload = $client->verifyIdToken($idToken);
         if (!$payload) {
-            return response()->json(['error' => 'Invalid ID token'], Response::HTTP_UNAUTHORIZED);
+            throw new InvalidInputException("id_token 的資料有誤。", [
+                "id_token" => $idToken,
+            ]);
         }
-        $GID = $payload['sub'];
-        $domain = $payload['hd'] ?? 'gmail.com';
-        $user = $this->userRepository->findUserByGoogleUserId($GID);
+
+        $userId = $payload["sub"];
+        $domain = $payload["hd"] ?? "gmail.com";
+        $user = $this->userRepository->findUserByGoogleUserId($userId);
+
         if (!$user) {
             $user = $this->userRepository->createUser([
-                'google_user_id' => $GID,
+                'google_user_id' => $userId,
                 'domain' => $domain,
                 'name' => $payload['name'],
                 'email' => $payload['email'],
-                'photo' => $payload['picture']]);
+                'photo' => $payload['picture']
+            ]);
         }
-        $this->userRepository->setUserAccessToken($user['id'], $access_token);
+
+
+        $this->userRepository->setUserAccessToken($user['id'], $accessToken);
         $token = $user->createToken('api-token');
         $studentInfo = $this->userRepository->getStudentInfo($user['id']);
         if ($studentInfo) {
