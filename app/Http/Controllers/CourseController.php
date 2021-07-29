@@ -83,7 +83,7 @@ class CourseController extends Controller
             $response = $service->courses->listCourses($params);
         } catch (Google_Service_Exception $e) {
             if ($e->getCode() == 403) {
-                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+                return response()->json(['error' => json_decode($e->getMessage(), true)['error']['message']], Response::HTTP_FORBIDDEN);
             }
             throw $e;
         }
@@ -113,7 +113,7 @@ class CourseController extends Controller
                 return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
             }
             if ($e->getCode() == 403) {
-                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+                return response()->json(['error' => json_decode($e->getMessage(), true)['error']['message']], Response::HTTP_FORBIDDEN);
             }
             throw $e;
         }
@@ -174,7 +174,7 @@ class CourseController extends Controller
             $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
         } catch (Google_Service_Exception $e) {
             if ($e->getCode() == 403) {
-                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+                return response()->json(['error' => json_decode($e->getMessage(), true)['error']['message']], Response::HTTP_FORBIDDEN);
             }
             throw $e;
         }
@@ -254,7 +254,7 @@ class CourseController extends Controller
                 $response = $service->courses_students->listCoursesStudents($googleClassroomId, $params);
             } catch (Google_Service_Exception $e) {
                 if ($e->getCode() == 403) {
-                    return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+                    return response()->json(['error' => json_decode($e->getMessage(), true)['error']['message']], Response::HTTP_FORBIDDEN);
                 }
                 throw $e;
             }
