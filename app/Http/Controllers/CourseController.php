@@ -79,7 +79,14 @@ class CourseController extends Controller
             'courseStates' => ['ACTIVE'],
             'teacherId' => $user['google_user_id']
         );
-        $response = $service->courses->listCourses($params);
+        try {
+            $response = $service->courses->listCourses($params);
+        } catch (Google_Service_Exception $e) {
+            if ($e->getCode() == 403) {
+                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+            }
+            throw $e;
+        }
         $courses = $response->courses;
         $result = array();
         foreach ($courses as $course) {
@@ -104,9 +111,11 @@ class CourseController extends Controller
         } catch (Google_Service_Exception $e) {
             if ($e->getCode() == 404) {
                 return response()->json(['error' => 'course_not_found'], Response::HTTP_NOT_FOUND);
-            } else {
-                throw $e;
             }
+            if ($e->getCode() == 403) {
+                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+            }
+            throw $e;
         }
         $students = $this->courseRepository->getStudentByGoogleClassroomId($googleClassroomId);
         if (!count($students)) {
@@ -161,7 +170,14 @@ class CourseController extends Controller
             'text' => $msg,
             'state' => 'PUBLISHED'
         ));
-        $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
+        try {
+            $response = $service->courses_announcements->create($course['google_classroom_id'], $announcement);
+        } catch (Google_Service_Exception $e) {
+            if ($e->getCode() == 403) {
+                return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+            }
+            throw $e;
+        }
         return response()->json(['link' => $link], Response::HTTP_CREATED);
     }
 
@@ -234,7 +250,14 @@ class CourseController extends Controller
                 'pageSize' => 100,
                 'pageToken' => $pageToken
             );
-            $response = $service->courses_students->listCoursesStudents($googleClassroomId, $params);
+            try {
+                $response = $service->courses_students->listCoursesStudents($googleClassroomId, $params);
+            } catch (Google_Service_Exception $e) {
+                if ($e->getCode() == 403) {
+                    return response()->json(['error' => $e->getMessage()], Response::HTTP_FORBIDDEN);
+                }
+                throw $e;
+            }
             $googleStudents = array_merge($googleStudents, $response->students);
             $pageToken = $response->nextPageToken;
         } while (!empty($pageToken));
