@@ -34,7 +34,7 @@ class AuthController extends Controller
         if (!$payload) {
             return response()->json(['error' => 'Invalid ID token'], Response::HTTP_UNAUTHORIZED);
         }
-        $GID = $payload['sub'];
+        $GID = strval($payload['sub']);
         $domain = $payload['hd'] ?? 'gmail.com';
         $user = $this->userRepository->findUserByGoogleUserId($GID);
         if (!$user) {
